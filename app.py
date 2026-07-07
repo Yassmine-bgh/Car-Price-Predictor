@@ -3,15 +3,11 @@
 
 import json
 import joblib
-import numpy as np
 import pandas as pd
 import streamlit as st
 
 st.set_page_config(page_title="Prédiction Prix Voiture", page_icon="🚗", layout="centered")
 
-# ---------------------------------------------------------------
-# Chargement du modèle et des artefacts (mis en cache pour la perf)
-# ---------------------------------------------------------------
 @st.cache_resource
 def load_artifacts():
     try:
@@ -38,9 +34,6 @@ if model is None:
     )
     st.stop()
 
-# ---------------------------------------------------------------
-# Barre latérale : infos sur le modèle
-# ---------------------------------------------------------------
 with st.sidebar:
     st.header("À propos du modèle")
     st.metric("Erreur absolue moyenne (MAE)", f"${metadata['mae']:.2f}")
@@ -49,9 +42,6 @@ with st.sidebar:
     st.write(f"Kilométrage couvert : {metadata['miles_min']:,} – {metadata['miles_max']:,} miles")
     st.write(f"Nombre de modèles de voiture connus : {len(metadata['car_names'])}")
 
-# ---------------------------------------------------------------
-# Formulaire de saisie
-# ---------------------------------------------------------------
 st.subheader("Renseigne les informations de la voiture")
 
 col1, col2 = st.columns(2)
@@ -60,7 +50,6 @@ with col1:
     name = st.selectbox(
         "Modèle de voiture",
         options=metadata["car_names"],
-        help="Liste des modèles vus pendant l'entraînement.",
     )
     year = st.number_input(
         "Année",
@@ -81,9 +70,6 @@ with col2:
 
 predict_btn = st.button("💰 Estimer le prix", type="primary", use_container_width=True)
 
-# ---------------------------------------------------------------
-# Prédiction
-# ---------------------------------------------------------------
 if predict_btn:
     try:
         name_encoded = le.transform([name])[0]
@@ -102,7 +88,6 @@ if predict_btn:
 
     st.success(f"### Prix estimé : ${predicted_price:,.0f}")
 
-    # Petite marge d'erreur indicative basée sur le MAE du modèle
     low = predicted_price - metadata["mae"]
     high = predicted_price + metadata["mae"]
     st.caption(f"Fourchette approximative (± MAE) : ${low:,.0f} – ${high:,.0f}")
